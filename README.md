@@ -1,4 +1,4 @@
-# ideathon_monitor
+# Event Monitoring Web App
 
 A new Flutter project.
 
