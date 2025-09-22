@@ -63,4 +63,24 @@ class DatabaseService {
         .single();
     return response;
   }
+  // --- ADD THESE NEW FUNCTIONS ---
+
+  /// Fetches the list of all coordinators (admin only).
+  Future<List<Map<String, dynamic>>> getAllCoordinators() async {
+    try {
+      final response = await supabase.from('coordinators').select();
+      return response;
+    } catch (e) {
+      print('Error fetching coordinators: $e');
+      return [];
+    }
+  }
+
+  /// Updates the role of a specific coordinator (admin only).
+  Future<void> updateCoordinatorRole(String userId, String newRole) async {
+    await supabase
+        .from('coordinators')
+        .update({'role': newRole})
+        .eq('id', userId);
+  }
 }

@@ -1,8 +1,17 @@
 // lib/screens/teams_screen.dart
 
+import 'dart:convert';
+
+import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
 import 'package:ideathon_monitor/screen/team_detail_screen.dart';
 import 'package:ideathon_monitor/services/database_service.dart';
+import 'package:ideathon_monitor/utils/export_service.dart';
+
+// Import for web-specific download functionality
+import 'dart:html' as html;
+
+import 'package:ideathon_monitor/widgets/filter_chip_group.dart';
 
 class TeamsScreen extends StatefulWidget {
   final String userRole;
@@ -15,6 +24,7 @@ class TeamsScreen extends StatefulWidget {
 class _TeamsScreenState extends State<TeamsScreen> {
   final _searchController = TextEditingController();
   final _dbService = DatabaseService();
+  final _exportService = ExportService(); // <-- ADD THIS LINE
 
   bool _isLoading = true;
   List<Map<String, dynamic>> _allRegistrations = [];
@@ -98,7 +108,18 @@ class _TeamsScreenState extends State<TeamsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('All Registrations')),
+      appBar: AppBar(
+        title: const Text('All Registrations'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.description),
+            tooltip: 'Export to CSV',
+            // Call the method from our new export service
+            onPressed: () =>
+                _exportService.exportToCsv(context, _displayedRegistrations),
+          ),
+        ],
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -117,21 +138,22 @@ class _TeamsScreenState extends State<TeamsScreen> {
                   ),
                   const SizedBox(height: 12),
 
+                  // Use our new reusable FilterChipGroup widget
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildFilterChipGroup(
+                      FilterChipGroup(
                         label: 'Format:',
-                        options: ['All', 'Team', 'Solo'],
+                        options: const ['All', 'Team', 'Solo'],
                         selectedOption: _selectedFormat,
                         onSelected: (value) {
                           setState(() => _selectedFormat = value);
                           _runFilter();
                         },
                       ),
-                      _buildFilterChipGroup(
+                      FilterChipGroup(
                         label: 'Details:',
-                        options: ['All', 'Complete', 'Incomplete'],
+                        options: const ['All', 'Complete', 'Incomplete'],
                         selectedOption: _selectedStatus,
                         onSelected: (value) {
                           setState(() => _selectedStatus = value);
@@ -170,8 +192,6 @@ class _TeamsScreenState extends State<TeamsScreen> {
                                     'Lead: ${registration['team_lead_name'] ?? 'N/A'}',
                                   ),
                                   trailing: const Icon(Icons.arrow_forward_ios),
-                                  // --- THIS IS THE FIX ---
-                                  // The navigation code was missing here. It is now restored.
                                   onTap: () {
                                     Navigator.push(
                                       context,

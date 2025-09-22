@@ -1,6 +1,7 @@
 // lib/screens/dashboard_screen.dart
 
 import 'package:flutter/material.dart';
+import 'package:ideathon_monitor/screen/admin_screen.dart';
 import 'package:ideathon_monitor/screen/teams_screen.dart';
 import 'package:ideathon_monitor/services/database_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -13,7 +14,6 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  // This Future will now hold the full list of registrations and the user's role
   late final Future<Map<String, dynamic>> _dashboardDataFuture;
   final DatabaseService _dbService = DatabaseService();
 
@@ -23,7 +23,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
     _dashboardDataFuture = _loadDashboardData();
   }
 
-  // Updated to fetch all registrations instead of just the count
   Future<Map<String, dynamic>> _loadDashboardData() async {
     final registrations = await _dbService.getAllRegistrations();
     final role = await _dbService.getCurrentUserRole();
@@ -152,6 +151,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     );
                   },
                 ),
+                // --- NEW: Conditionally show the Admin Panel link ---
+                if (userRole == 'admin')
+                  ListTile(
+                    leading: const Icon(Icons.admin_panel_settings),
+                    title: const Text('Admin: Manage Coordinators'),
+                    subtitle: const Text('Add/remove users and manage roles'),
+                    trailing: const Icon(Icons.arrow_forward_ios),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AdminScreen(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
           );
